@@ -8,6 +8,7 @@ import lv.home.smallurl.urlcompacter.service.SmallUrlService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -15,11 +16,12 @@ import javax.validation.Valid;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/generate")
 public class SmallUrlController {
 
     private final SmallUrlService smallUrlService;
 
-    @PostMapping("/generate")
+    @PostMapping
     public ResponseEntity<GeneratedUrl> generateSmallUrl(@Valid @RequestBody SmallUrlHolder smallUrlHolder) {
         log.info("Received " + smallUrlHolder.getOriginal());
         GeneratedUrl body = smallUrlService.generateUrl(smallUrlHolder.getOriginal());

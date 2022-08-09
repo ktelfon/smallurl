@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface SmallUrlRepo extends JpaRepository<SmallUrl, Long> {
-    Optional<String> findByCompressed(String compressedUrl);
+    Optional<SmallUrl> findByCompressed(String compressedUrl);
 }

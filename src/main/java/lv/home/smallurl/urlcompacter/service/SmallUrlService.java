@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 public class SmallUrlService {
 
     private final UrlCompacterService urlCompacterService;
+    private final CounterService counterService;
     private final SmallUrlRepo smallUrlRepo;
 
     public GeneratedUrl generateUrl(String url) {
@@ -24,7 +25,9 @@ public class SmallUrlService {
     }
 
     public String getOriginalUrl(String compressedUrl) throws NoSuchSmallUrlFoundException {
-        return smallUrlRepo.findByCompressed(compressedUrl)
-                .orElseThrow(() -> new NoSuchSmallUrlFoundException("No such small url found"));
+        SmallUrl smallUrl = smallUrlRepo.findByCompressed(compressedUrl)
+                .orElseThrow(NoSuchSmallUrlFoundException::new);
+        counterService.countLinkRequest(smallUrl);
+        return smallUrl.getOriginal();
     }
 }

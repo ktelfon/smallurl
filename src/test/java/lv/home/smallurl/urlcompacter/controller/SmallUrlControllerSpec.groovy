@@ -1,8 +1,8 @@
 package lv.home.smallurl.urlcompacter.controller
 
 import lv.home.smallurl.WebIntegrationSpec
-import lv.home.smallurl.urlcompacter.domain.SmallUrl
 import lv.home.smallurl.urlcompacter.model.SmallUrlHolder
+import lv.home.smallurl.urlcompacter.repository.CounterRepo
 import lv.home.smallurl.urlcompacter.repository.SmallUrlRepo
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -16,12 +16,15 @@ class SmallUrlControllerSpec extends WebIntegrationSpec {
     @Autowired
     SmallUrlRepo smallUrlRepo
 
+    @Autowired
+    CounterRepo counterRepo
+
     def "On post request to '/generate' smallUrl is saved to DB"() {
 
         given:
         def link = "link"
         def linkReq = new SmallUrlHolder(link);
-        String requestBody = jsonInString(linkReq)
+        def requestBody = jsonInString(linkReq)
         def request = post("/generate", requestBody)
 
         when:
@@ -31,9 +34,13 @@ class SmallUrlControllerSpec extends WebIntegrationSpec {
         resp.get().statusCode() == 200
         resp.get().body() != null
         await(2) {
-            def smallUrls = smallUrlRepo.findAll();
+            def smallUrls = smallUrlRepo.findAll()
             smallUrls.size() == 1
             smallUrls[0].original == link
+
+            def counters = counterRepo.findAll()
+            counters.size() == 1
+            counters[0].smallUrl.original == link
         }
     }
 
