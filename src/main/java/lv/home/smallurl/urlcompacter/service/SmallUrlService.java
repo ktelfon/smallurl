@@ -18,6 +18,7 @@ public class SmallUrlService {
     public GeneratedUrl generateUrl(String url) {
         String compressedIp = urlCompacterService.compressIp(url);
         smallUrlRepo.save(SmallUrl.builder()
+                .count(1)
                 .compressed(compressedIp)
                 .original(url)
                 .build());

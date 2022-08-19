@@ -3,6 +3,7 @@ package lv.home.smallurl.urlcompacter.domain;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 @Entity
@@ -25,7 +26,6 @@ public class SmallUrl {
     @NotEmpty
     private String compressed;
 
-    @OneToOne
-    @JoinColumn(name = "url_id")
-    private Counter count;
+   @Min(1)
+    private int count;
 }

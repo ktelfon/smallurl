@@ -1,9 +1,9 @@
 package lv.home.smallurl.urlcompacter.controller
 
 import lv.home.smallurl.WebIntegrationSpec
-import lv.home.smallurl.urlcompacter.domain.Counter
+
 import lv.home.smallurl.urlcompacter.domain.SmallUrl
-import lv.home.smallurl.urlcompacter.repository.CounterRepo
+
 import lv.home.smallurl.urlcompacter.repository.SmallUrlRepo
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -17,8 +17,6 @@ class RedirectControllerSpec extends WebIntegrationSpec {
     @Autowired
     SmallUrlRepo smallUrlRepo
 
-    @Autowired
-    CounterRepo counterRepo
 
 
     def "Redirects to a address from a saved url"() {
@@ -29,16 +27,9 @@ class RedirectControllerSpec extends WebIntegrationSpec {
         def smallUrl = SmallUrl.builder()
                 .compressed(compressedUrl)
                 .original(link)
-                .count(null)
-                .build()
-        smallUrl = smallUrlRepo.save(smallUrl)
-
-        def count = counterRepo.save(Counter.builder()
                 .count(1)
-                .smallUrl(smallUrl)
-                .build())
-
-        counterRepo.save(count)
+                .build()
+        smallUrlRepo.save(smallUrl)
 
         when:
 
@@ -51,7 +42,7 @@ class RedirectControllerSpec extends WebIntegrationSpec {
         then:
 
         resp.get().statusCode() == 302
-        resp.get().headers()['location'] == link
+        resp.get().headers().allValues('location')[0] != null
 
     }
 }

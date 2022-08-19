@@ -6,21 +6,25 @@ import lv.home.smallurl.urlcompacter.exception.NoSuchSmallUrlFoundException;
 import lv.home.smallurl.urlcompacter.model.UrlStats;
 import lv.home.smallurl.urlcompacter.service.StatsService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/stats/")
+@RequestMapping("/stats")
 public class StatisticsController {
 
     private final StatsService statsService;
 
-    @GetMapping("{compressedUrl}")
+    @GetMapping("/{compressedUrl}")
     public ResponseEntity<UrlStats> getUrlStats(@PathVariable(name = "compressedUrl") String compressedUrl) throws NoSuchSmallUrlFoundException {
         return ResponseEntity.ok(statsService.getStatsByCompressedUrl(compressedUrl));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UrlStats>> getAllOfStats(@RequestParam int page, @RequestParam int count) {
+        return ResponseEntity.ok(statsService.getStatsByPage(page, count));
     }
 }
