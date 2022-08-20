@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -23,31 +22,36 @@ public class StatsService {
 
     private final SmallUrlRepo smallUrlRepo;
 
-    public Long getUrlRankByCounterId(long id) {
-        log.info("Getting rank for counter id {} ", id);
-        return smallUrlRepo.getUrlRankById(id).orElseGet(() -> {
-            log.info("No rank found for id {} ", id);
-            return 0L;
-        });
-    }
-
     public UrlStats getStatsByCompressedUrl(String compressedUrl) throws NoSuchSmallUrlFoundException {
         log.info("Getting stats by compressed url {}", compressedUrl);
-        return smallUrlRepo.findByCompressed(compressedUrl)
-                .flatMap(smallUrl -> Optional.of(UrlStats.builder()
-                        .rank(getUrlRankByCounterId(smallUrl.getId()))
-                        .count(smallUrl.getCount())
-                        .link(smallUrl.getCompressed())
-                        .original(smallUrl.getOriginal())
-                        .build()))
-                .orElseThrow(() -> {
-                    log.info("Cannot get stats for {} ", compressedUrl);
-                    return new NoSuchSmallUrlFoundException();
-                });
+
+        // не могу предумать как сразу находить позицию
+        // можно сделать sql с сортировкой и позицией в таблице
+        // можно сделать ограниченый запрос что-бы не всё вытаскивать
+        SmallUrl smallUrl = smallUrlRepo.findByCompressed(compressedUrl).orElseThrow(() -> {
+            log.error("No compressed url found {}", compressedUrl);
+            return new NoSuchSmallUrlFoundException();
+        });
+        List<SmallUrl> all = smallUrlRepo.findAll().stream()
+                .sorted(Comparator.comparing(SmallUrl::getCount).reversed())
+                .collect(Collectors.toList());
+        int tmp = 0;
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getId().equals(smallUrl.getId())) {
+                tmp = i;
+            }
+        }
+        int rank = tmp;
+        return UrlStats.builder()
+                .rank(rank)
+                .count(smallUrl.getCount())
+                .link(smallUrl.getCompressed())
+                .original(smallUrl.getOriginal())
+                .build();
     }
 
     public List<UrlStats> getStatsByPage(int page, int count) {
-        AtomicLong startingIndex = new AtomicLong((long) (page-1) * count);
+        AtomicLong startingIndex = new AtomicLong((long) (page - 1) * count);
         return smallUrlRepo
                 .findAll(PageRequest.of((page - 1), count, Sort.by(Sort.Direction.DESC, "count")))
                 .stream()

@@ -57,7 +57,7 @@ class StatisticsControllerSpec extends WebIntegrationSpec {
     def "get stat by compressed url"() {
 
         given:
-        def compressedUrl = smallUrls[0].original
+        def compressedUrl = smallUrls[0].compressed
         def request = HttpRequest.newBuilder(URI.create(baseUrl + "/stats/" + compressedUrl))
                 .headers("Content-Type", APPLICATION_JSON_VALUE)
                 .GET()
@@ -72,7 +72,7 @@ class StatisticsControllerSpec extends WebIntegrationSpec {
         response.statusCode() == 200
         response.body() != null
         UrlStats result = objectMapper.readValue(response.body(), UrlStats)
-        result.rank == 6
+        result.rank == 3
         result.count == smallUrls[0].count
         result.original == smallUrls[0].original
     }
